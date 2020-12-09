@@ -30,6 +30,7 @@ import java.util.TimerTask;
 public class Main extends Application {
 
     private  BufferedReader bufferedReader= null;
+    private String FileName;
     private  PrintWriter printWriter = null;
     private  Socket socket = null;
     private  hl7_Interface hl7 = null;
@@ -59,22 +60,18 @@ public class Main extends Application {
         for (String s:mess
         ) {
             String[] segment = s.split("[|]");
-            if(!segment[0].equals("OBX")){
-                continue;
-            }else{
-                String[] vitals = segment[3].split("\\^");
-
-
-                System.out.println(vitals[1]);
+            if(segment[0].contains("OBX")&&(s.contains("MDC_PULS_OXIM_PULS_RATE")||s.contains("MDC_PULS_OXIM_SAT_O2")||s.contains("MDC_TTHOR_RESP_RATE")||s.contains("MDC_ECG_HEART_RATE"))){
+                ArrayList<String> vitals = this.Map(s);
                 Platform.runLater(new Runnable() {
                     @Override public void run() {
                         //Update UI here
-                        hl7.fp.getChildren().add(new EMIC_VITAL(vitals[1],segment[5],"%"));
-
+                        hl7.fp.getChildren().add(new EMIC_VITAL(vitals.get(0),segment[5],vitals.get(1)));
                     }
                 });
+            }else{
+                continue;
             }
-        }
+            }
 
         System.out.println("Done reading");
         hl7.console.appendText(line+"\n\n\n");
@@ -84,14 +81,37 @@ public class Main extends Application {
         printWriter = new PrintWriter(socket.getOutputStream(),true);
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         hl7.console.appendText("Client Side Setup Completed..........\n\n");
-        printWriter.println("CONNECT\n\n");
+        printWriter.println("CONNECT:"+FileName+"\n\n");
         hl7.console.appendText(bufferedReader.readLine()+"\n\n");
         mess.clear();
         return 0;
     }
 
+    private ArrayList<String> Map(String s){
+        ArrayList<String> t = new ArrayList<>();
+        if(s.contains("MDC_ECG_HEART_RATE")){
+            t.add("Heart Rate");
+            t.add("bpm");
+        }
+        if(s.contains("MDC_TTHOR_RESP_RATE")){
+            t.add("Respiration Rate");
+            t.add("rpm");
+        }
+        if(s.contains("MDC_PULS_OXIM_SAT_O2")){
+            t.add("Oxygen Saturation");
+            t.add("%");
+        }
+        if(s.contains("MDC_PULS_OXIM_PULS_RATE")){
+            t.add("Pulse Rate");
+            t.add("bpm");
+        }
+
+        return t;
+    }
+
     public static void main(String[] args) throws IOException {
         launch(args);
+
     }
 
     @Override
@@ -108,7 +128,8 @@ public class Main extends Application {
                     @Override
                     protected Integer call() throws IOException {
                         System.out.println("Done Client Side Setup");
-                        printWriter.println("CONNECT\n\n");
+                        FileName = hl7.navigation.Destination.getText();
+                        printWriter.println("CONNECT:"+FileName+"\n\n");
                         String line = bufferedReader.readLine();
                         hl7.console.appendText(line+"\n\n");
                         return 0;
@@ -185,8 +206,6 @@ public class Main extends Application {
 
         });
 
-
-
         hl7.navigation.Close.setOnAction(e->{
             printWriter.close();
             try {
@@ -212,7 +231,7 @@ public class Main extends Application {
                 printWriter = new PrintWriter(socket.getOutputStream(),true);
                 bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 hl7.console.appendText("Client Side Setup Completed..........\n\n");
-                printWriter.println("CONNECT\n\n");
+                printWriter.println("CONNECT:"+FileName+"\n\n");
                 hl7.console.appendText(bufferedReader.readLine()+"\n\n");
                 hl7.console.setText("Connected\n\n");
                 hl7.fp.getChildren().clear();

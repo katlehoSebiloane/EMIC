@@ -28,7 +28,8 @@ public class EMIC_VITAL extends HBox {
 
 
         setPadding(new Insets(25));
-        setPrefWidth(300);
+        setMaxWidth(450);
+        setMinWidth(450);
 
         setStyle("-fx-background-color:#c4c4c4");
         getChildren().addAll(Title,Reading,Unit);

@@ -1,5 +1,7 @@
 package EMIC_SERVER_UI;
 
+import javafx.geometry.Insets;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -17,7 +19,12 @@ public class Navigation extends VBox {
     public hl7_Button Close = new hl7_Button("Shutdown");
     public hl7_Button Connect = new hl7_Button("Connect");
     public hl7_Button Simulate = new hl7_Button("Simulate");
+    public TextField Destination = new TextField();
+    private HBox Des_Container = new HBox();
     Navigation(){
+        Des_Container.getChildren().add(Destination);
+        Destination.setMaxWidth(60);
+        Des_Container.setPadding(new Insets(15));
         Logo_Container.getChildren().add(Logo_View);
         Tooltip.install(Logo_Container,new Tooltip("Home"));
         Logo_Container.setStyle("-fx-background-color:#2d2d2d");
@@ -25,7 +32,7 @@ public class Navigation extends VBox {
         Logo_View.setPreserveRatio(true);
         setStyle("-fx-background-color:#2d2d2d");
         setSpacing(10);
-        getChildren().addAll(Logo_Container,Connect,Test,Read,Simulate,Restart,Close);
+        getChildren().addAll(Logo_Container,Connect,Test,Read,Simulate,Restart,Close,Des_Container);
 
     }
 }

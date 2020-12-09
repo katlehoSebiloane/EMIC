@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Handler implements Runnable{
-    private BufferedReader bufferedReader= null;
-    private PrintWriter printWriter = null;
-    public ArrayList<String> Database = new ArrayList<>();
+    private BufferedReader bufferedReader;
+    private PrintWriter printWriter;
     private File logs = null;
     private FileInputStream fis = null;
     private Scanner sc = null;
     private FileWriter logWriter = null;
-    private Socket s = null;
+    private Socket s;
+    private String ID;
 
     public Handler(Socket socket) throws IOException {
         this.s = socket;
@@ -34,7 +34,7 @@ public class Handler implements Runnable{
                 if(Command.equals("SHOW")){
 
                     String Message;
-                    File logs = new File("./logs.txt");
+                    File logs = new File("./"+ID);
                     fis = new FileInputStream(logs);
                     sc = new Scanner(fis);
 
@@ -49,19 +49,27 @@ public class Handler implements Runnable{
 
                 }
 
-                if(Command.equals("CONNECT")){
+                if(Command.contains("CONNECT")){
                     System.out.println("NEW CONNECTION DETECTED");
                     printWriter.println("Connected.......\n");
                     printWriter.flush();
+                    ID = Command.split("[:]")[1]+".txt";
+                    System.out.println(ID);
                 }
 
                 if(Type.contains("MSH")){
+                    if(s.getRemoteSocketAddress().toString().split("[.]")[3].contains("119")){
+                        ID = "D3.txt";
+                    }
+                    if(s.getRemoteSocketAddress().toString().split("[.]")[3].contains("115")){
+                        ID = "D6.txt";
+                    }
                     System.out.println("MESSAGE EVENT DETECTED!");
                     printWriter.println("The Test Message Has Been Received");
                     Scanner sc = new Scanner(bufferedReader);
                     while(sc.hasNextLine()){
                         String mess = sc.nextLine()+"\n";
-                        logWriter = new FileWriter("logs.txt",true);
+                        logWriter = new FileWriter(ID,true);
                         logWriter.write(mess,0,mess.length());
                         logWriter.close();
                         System.out.println("read a line....");
