@@ -9,6 +9,11 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.Scene;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -30,20 +35,91 @@ import java.util.TimerTask;
 public class Main extends Application {
 
     private  BufferedReader bufferedReader= null;
+    private final CategoryAxis xAxis = new CategoryAxis();
+    private final NumberAxis yAxis = new NumberAxis();
+    private final LineChart<String, Number> lineChart = new LineChart<>(xAxis, yAxis);
+    private XYChart.Series<String, Number> series = new XYChart.Series<>();
+    final int WINDOW_SIZE = 1000;
+    private StringBuffer Readout;
+    private String[] Readings;
     private String FileName;
     private  PrintWriter printWriter = null;
+    private int interation=0;
     private  Socket socket = null;
     private  hl7_Interface hl7 = null;
     private ArrayList<String> mess = new ArrayList<>();
     private Timer timer = new Timer();
+    private Integer readingvalue = 0;
     private TimerTask sim = new TimerTask() {
         @Override
         public void run() {
-            try {
-                Read();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            StringBuilder sb = new StringBuilder();
+            Task<Integer> task = new Task<Integer>() {
+                @Override
+                protected Integer call() throws Exception {
+                    System.out.println("this is running");
+                    if(interation<Readings.length){
+                        Platform.runLater(()->{
+                            hl7.console.appendText(Readings[interation]);
+                            Scanner sc = new Scanner(Readings[interation]);
+                            while(sc.hasNextLine()){
+                                String line = sc.nextLine();
+                                sb.append(line+"\n");
+                                String[] segment = line.split("[|]");
+                                System.out.println(line);
+                                if(segment[0].contains("OBX")&&(line.contains("MDC_PULS_OXIM_PULS_RATE")||line.contains("MDC_PULS_OXIM_SAT_O2")||line.contains("MDC_TTHOR_RESP_RATE")||line.contains("MDC_ECG_HEART_RATE"))){
+                                    hl7.fp.getChildren().add(new EMIC_VITAL("Reading",segment[5],"Unit of measurement"));
+                                    //series.getData().add(new XYChart.Data<>(segment[14], Integer.parseInt(segment[5])));
+                                }if(segment[0].contains("OBX")&&(line.contains("MDC_ECG_ELEC_POTL_II"))){
+                                    String[] values = segment[5].split("['^']");
+                                    //series.getData().clear();
+
+                                    for (String s:values
+                                    ) {
+                                        Integer puff = Integer.parseInt(s);
+                                        readingvalue++;
+                                        String test = readingvalue.toString();
+                                        XYChart.Data data = new XYChart.Data(test,puff);
+                                        Rectangle rect = new Rectangle(0, 0);
+                                        rect.setVisible(false);
+                                        data.setNode(rect);
+                                        series.getData().add(data);
+                                        if (series.getData().size() > WINDOW_SIZE)
+                                            series.getData().remove(0);
+                                    }
+                                }
+                            }
+                            printWriter.println("sim");
+                            Scanner sc1 = new Scanner(sb.toString());
+                            while (sc1.hasNextLine()){
+                                printWriter.println(sc1.nextLine());
+                            }
+                            printWriter.flush();
+                            printWriter.close();
+                            try {
+                                socket = new Socket(InetAddress.getLocalHost(),15000);
+                                printWriter = new PrintWriter(socket.getOutputStream(),true);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            interation++;
+
+                        });
+                    }else{
+                        timer.cancel();
+                        System.out.println("timer cancelled simulation complete!");
+                        Platform.runLater(()->{
+                            hl7.console.appendText("Simulation Complete!!");
+
+                        });
+
+                    }
+                    return 0;
+                }
+            };
+            Thread t = new Thread(task);
+            t.start();
         }
     };
 
@@ -54,9 +130,11 @@ public class Main extends Application {
         Scanner sc = new Scanner(bufferedReader);
         while(sc.hasNextLine()){
             String lineRead = sc.nextLine();
-            line.append(lineRead);
+            line.append(lineRead+"\n");
             mess.add(lineRead);
         }
+        Readout = line;
+        Readings = Readout.toString().split("\u001C");
         for (String s:mess
         ) {
             String[] segment = s.split("[|]");
@@ -111,14 +189,21 @@ public class Main extends Application {
 
     public static void main(String[] args) throws IOException {
         launch(args);
-
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
         hl7 = new hl7_Interface();
+        lineChart.getData().add(series);
+        lineChart.setAnimated(false);
+        xAxis.setAnimated(false);
+        yAxis.setAnimated(false);
+       // lineChart.setMinWidth(1000);
+        lineChart.setMinHeight(400);
+        lineChart.setTitle("Vital Sign");
 
+        hl7.fp.getChildren().add(lineChart);
         hl7.navigation.Connect.setOnAction(e->{
             try {
                 socket = new Socket(InetAddress.getLocalHost(),15000);
@@ -246,7 +331,10 @@ public class Main extends Application {
         });
 
         hl7.navigation.Simulate.setOnAction(e->{
-                timer.scheduleAtFixedRate(sim,100,10000);
+                hl7.fp.getChildren().clear();
+                hl7.fp.getChildren().add(lineChart);
+                hl7.console.clear();
+                timer.scheduleAtFixedRate(sim,100,1000);
                 hl7.console.appendText("\n Starting Simulation \n");
         });
 

@@ -49,6 +49,29 @@ public class Handler implements Runnable{
 
                 }
 
+                if(Command.contains("sim")){
+                    try{
+//                        FileWriter fwOb = new FileWriter(new File("./Sim.txt"), false);
+//                        PrintWriter pwOb = new PrintWriter(fwOb, false);
+//                        pwOb.flush();
+//                        pwOb.close();
+//                        fwOb.close();
+
+                        Scanner sc = new Scanner(bufferedReader);
+                        FileWriter fw = new FileWriter("./Sim.txt");
+                        while(sc.hasNextLine()){
+                            fw.append(sc.nextLine()+"\n");
+                        }
+                        fw.close();
+
+
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                }
+
                 if(Command.contains("CONNECT")){
                     System.out.println("NEW CONNECTION DETECTED");
                     printWriter.println("Connected.......\n");

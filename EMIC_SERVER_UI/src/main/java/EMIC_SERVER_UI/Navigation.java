@@ -10,7 +10,7 @@ import javafx.scene.layout.VBox;
 
 public class Navigation extends VBox {
     private HBox Logo_Container = new HBox();
-    private Image Logo = new Image("file:///home/katleho/Documents/emic/EMIC_SERVER_UI/src/main/java/EMIC_SERVER_UI/1.png");
+    private Image Logo = new Image("file:////home/katleho/Desktop/EMIC/EMIC_SERVER_UI/src/main/java/EMIC_SERVER_UI/1.png");
     private ImageView Logo_View= new ImageView(Logo);
     public hl7_Button Read = new hl7_Button("Read");
     public hl7_Button Parse = new hl7_Button("Parse");
