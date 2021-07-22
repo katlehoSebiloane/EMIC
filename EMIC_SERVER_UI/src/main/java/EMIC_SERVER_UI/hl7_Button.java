@@ -14,7 +14,7 @@ public class hl7_Button extends Button {
     hl7_Button(String Name){
         setStyle("-fx-background-color:#2d2d2d;-fx-background-radius:0px");
         setPadding(new Insets(15));
-        Image icon = new Image("file:///home/katleho/Documents/emic/EMIC_SERVER_UI/src/main/java/EMIC_SERVER_UI/"+Name+".png");
+        Image icon = new Image("file:////home/katleho/Desktop/EMIC/EMIC_SERVER_UI/src/main/java/EMIC_SERVER_UI/"+Name+".png");
         ImageView iconView = new ImageView();
         iconView.setFitWidth(20);
         iconView.setPreserveRatio(true);

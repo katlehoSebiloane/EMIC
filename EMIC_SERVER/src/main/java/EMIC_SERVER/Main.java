@@ -14,6 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 
+
 /**
  *
  * @author KATLEHO SEBILOANE
@@ -29,7 +30,6 @@ public class Main {
 
         while(true){
             socket = server.accept();
-            System.out.println("Connected!!");
             Handler hlr = new Handler(socket);
             Thread t = new Thread(hlr);
             t.start();

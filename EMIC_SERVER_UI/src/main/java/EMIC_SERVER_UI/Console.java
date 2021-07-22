@@ -16,7 +16,15 @@ public class Console extends TextArea {
         setFont(Font.font("Segoe UI",18));
         setBorder(new Border(new BorderStroke(Color.rgb(55,55,55), BorderStrokeStyle.SOLID,CornerRadii.EMPTY, BorderWidths.DEFAULT)));
         setWrapText(true);
-        setMinWidth(200);
         setMinHeight(1020);
+
+        setOnMouseDragged(e->{
+            setMinWidth(1920-e.getScreenX());
+            setMaxWidth(1920-e.getScreenX()+50);
+
+        });
+        setOnMouseEntered(e->{
+            setCursor(Cursor.E_RESIZE);
+        });
     }
 }

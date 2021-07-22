@@ -1,6 +1,7 @@
 package EMIC_SERVER_UI;
 
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -18,6 +19,7 @@ public class hl7_Interface extends BorderPane {
         s.setContent(fp);
         s.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         fp.setMinWidth(1000);
+
         setLeft(navigation);
         setRight(console);
         setCenter(s);

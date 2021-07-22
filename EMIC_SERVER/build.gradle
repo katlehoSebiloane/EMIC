@@ -11,4 +11,6 @@ repositories {
 
 dependencies {
     testImplementation     'junit:junit:4.13'
+    compile 'org.mongodb:mongodb-driver-sync:4.1.1'
 }
+
